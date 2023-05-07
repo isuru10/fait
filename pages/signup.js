@@ -1,8 +1,9 @@
 import { useUser } from "@/lib/hooks";
+import Link from "next/link";
 import Router from "next/router";
 import { useState } from "react";
 
-const Login = () => {
+const Signup = () => {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
@@ -14,17 +15,28 @@ const Login = () => {
 		setErrorMessage("");
 
 		try {
-			const res = await fetch("/api/login", {
+			const signupRes = await fetch("/api/signup", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username: username, password: password }),
 			});
 
-			const data = await res.json();
-			if (res.status === 200) {
+			const signupData = await signupRes.json();
+			if (signupRes.status !== 200) {
+				throw signupData.error || new Error(signupData.message);
+			}
+
+			const loginRes = await fetch("/api/login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ username: username, password: password }),
+			});
+
+			const loginData = await loginRes.json();
+			if (loginRes.status === 200) {
 				Router.push("/");
 			} else {
-				throw data.error || new Error(data.message);
+				throw loginData.error || new Error(loginData.message);
 			}
 		} catch (error) {
 			console.log("An unexpected error has occurred: ", error.message);
@@ -34,7 +46,7 @@ const Login = () => {
 
 	return (
 		<div>
-			<h3>Login</h3>
+			<h3>Sign Up</h3>
 			<form onSubmit={onSubmit}>
 				<input
 					type="text"
@@ -50,11 +62,14 @@ const Login = () => {
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 				/>
-				<input type="submit" value="Login" />
+				<input type="submit" value="Sign Up" />
 			</form>
+			<p>
+				Already have an account? <Link href="/login">Login</Link>
+			</p>
 			{errorMessage && <p className="error">{errorMessage}</p>}
 		</div>
 	);
 };
 
-export default Login;
+export default Signup;

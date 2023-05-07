@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import "@/styles/globals.css";
+import "@/styles/react-datepicker.css";
 
 const App = ({ Component, pageProps }) => {
 	return (

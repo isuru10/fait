@@ -30,7 +30,8 @@ export default async function generate(req, res) {
 		const completion = await openai.createCompletion({
 			model: "text-davinci-003",
 			prompt: generatePrompt(dob),
-			temperature: 0.6,
+			max_tokens: 64,
+			temperature: 0,
 		});
 		res.status(200).json({ result: completion.data.choices[0].text });
 	} catch (error) {
@@ -50,11 +51,10 @@ export default async function generate(req, res) {
 }
 
 function generatePrompt(dob) {
-	return `You are now in a game of predicting someones future based on their date of birth. 
-	assume you are a professional astrologer with decades of experience. 
-	generate astrological prediction on how the next week will occur for the following date of birth 
-	delimited with triple quotes. use high amount of perplexity and burstiness when generating your response. 
-	do not include an introductory sentence. assume you are directly speaking to the person whose date of birth is given. 
-	summarize all to 200 characters.
+	return `You are in a game of predicting someones future based on their dob. 
+	you are a professional astrologer with decades of experience. 
+	generate astrological prediction on how the next week will occur for the following dob
+	delimited with '''. use high amount of perplexity and burstiness in your response. 
+	you are directly speaking to the person whose dob is given. strictly summarize the response to only 200 characters.
 	'''${dob}'''`;
 }

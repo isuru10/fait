@@ -1,23 +1,14 @@
 import { createRouter, expressWrapper } from "next-connect";
-import { setLoginSession } from "@/lib/auth";
+
+import { getLoginSession } from "@/lib/auth";
 import MongoStore from "connect-mongo";
 
 const session = require("express-session");
 const db = require("../../lib/models");
 const passport = db.passport;
+const User = db.user;
 
 const router = createRouter();
-
-const authenticate = (method, req, res) =>
-	new Promise((resolve, reject) => {
-		passport.authenticate(method, { session: false }, (error, token) => {
-			if (error) {
-				reject(error);
-			} else {
-				resolve(token);
-			}
-		})(req, res);
-	});
 
 db.mongoose
 	.connect(process.env.MONGO_URL)
@@ -43,22 +34,21 @@ router
 	)
 	.use(expressWrapper(passport.initialize()))
 	.use(expressWrapper(passport.session()))
-	.post(async (req, res) => {
+	.get(async (req, res) => {
 		try {
-			const user = await authenticate("local", req, res);
-			const session = { ...user };
+			const session = await getLoginSession(req);
+			const user =
+				(session &&
+					(await User.findOne(
+						{ username: session._doc.username },
+						"username dob"
+					).exec())) ??
+				null;
 
-			if (!user) {
-				res
-					.status(401)
-					.send({ done: false, message: "Username or password is incorrect" });
-			} else {
-				await setLoginSession(res, session);
-				res.status(200).send({ done: true });
-			}
+			res.status(200).json({ user });
 		} catch (error) {
 			console.error(error);
-			res.status(401).send(error.message);
+			res.status(500).end("Authentication token is invalid, please log in");
 		}
 	});
 

@@ -1,11 +1,14 @@
-import Head from "next/head";
 import { useState } from "react";
 import Link from "next/link";
+import Disclaimer from "@/components/Disclaimer";
+import { useUser } from "@/lib/hooks";
 
 export default function Home() {
 	const [dateInput, setDateInput] = useState("");
 	const [result, setResult] = useState();
 	const [isLoading, setIsLoading] = useState(false);
+
+	const user = useUser();
 
 	async function onSubmit(event) {
 		setIsLoading(true);
@@ -28,13 +31,40 @@ export default function Home() {
 			}
 
 			setResult(data.result);
+
+			await savePrediction(data.result);
+
 			setDateInput("");
 			setIsLoading(false);
 		} catch (error) {
 			console.error(error);
 			alert(error.message);
 			setIsLoading(false);
+			setResult("");
 		}
+	}
+
+	function savePrediction(prediction) {
+		return new Promise(async (resolve, reject) => {
+			if (user) {
+				const response = await fetch("/api/predictions", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ prediction: prediction, dob: dateInput }),
+				});
+
+				const data = await response.json();
+				if (response.status !== 200) {
+					throw (
+						data.error ||
+						new Error(`Request failed with status ${response.status}`)
+					);
+				}
+				resolve();
+			}
+		});
 	}
 
 	return (
@@ -50,7 +80,6 @@ export default function Home() {
 				<input
 					type="date"
 					name="dob"
-					placeholder="Enter date of birth"
 					value={dateInput}
 					onChange={(e) => setDateInput(e.target.value)}
 				/>
@@ -58,15 +87,19 @@ export default function Home() {
 			</form>
 			{isLoading && <img src="/wizard-magic.gif" className="loading" />}
 			<div className="result">{result}</div>
-			<p>
-				<Link href="/login">Login</Link>&nbsp;to save the predictions
-			</p>
-			<div className="disclaimer">
-				DISCLAIMER: This is just for entertainment purposes only. Astrological
-				predictions are based on the position of celestial bodies at the time of
-				a person&apos;s birth, which is not a scientifically proven way to
-				predict one&apos;s future.
-			</div>
+
+			{user ? (
+				<p>
+					<Link href="/predictions">All Predictions</Link>
+				</p>
+			) : (
+				<p>
+					<Link href="/login">Login</Link>&nbsp; or{" "}
+					<Link href="/signup">Sign Up</Link>&nbsp; to save the predictions
+				</p>
+			)}
+
+			<Disclaimer />
 		</div>
 	);
 }
