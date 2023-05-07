@@ -7,23 +7,28 @@ const Predictions = () => {
 	useUser({ redirectTo: "/login", redirectIfFound: false });
 
 	const [predictions, setPredictions] = useState([]);
+	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
 		try {
+			setIsLoading(true);
 			fetch("/api/predictions", {
 				method: "GET",
 				headers: { "Content-Type": "application/json" },
 			})
 				.then((res) => res.json())
 				.then((data) => {
+					setIsLoading(false);
 					setPredictions(data.predictions);
 				})
 				.catch((err) => {
+					setIsLoading(false);
 					throw new Error(err);
 				});
 		} catch (error) {
 			console.log("An unexpected error has occurred", error.stack);
 			setErrorMessage("An unexpected error has occurred");
+			setIsLoading(false);
 		}
 	}, []);
 
@@ -47,6 +52,8 @@ const Predictions = () => {
 							prediction={prediction.prediction}
 						/>
 					))
+				) : isLoading ? (
+					<p>Loading...</p>
 				) : (
 					<p>No predictions generated yet</p>
 				)}

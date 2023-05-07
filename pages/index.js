@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Disclaimer from "@/components/Disclaimer";
 import { useUser } from "@/lib/hooks";
+import Image from "next/image";
 
 export default function Home() {
 	const [dateInput, setDateInput] = useState("");
@@ -12,6 +13,7 @@ export default function Home() {
 
 	async function onSubmit(event) {
 		setIsLoading(true);
+		setResult("");
 		event.preventDefault();
 		try {
 			const response = await fetch("/api/generate", {
@@ -24,6 +26,7 @@ export default function Home() {
 
 			const data = await response.json();
 			if (response.status !== 200) {
+				setIsLoading(false);
 				throw (
 					data.error ||
 					new Error(`Request failed with status ${response.status}`)
@@ -31,11 +34,11 @@ export default function Home() {
 			}
 
 			setResult(data.result);
+			setIsLoading(false);
 
 			await savePrediction(data.result);
 
 			setDateInput("");
-			setIsLoading(false);
 		} catch (error) {
 			console.error(error);
 			alert(error.message);
@@ -69,7 +72,7 @@ export default function Home() {
 
 	return (
 		<div>
-			<img src="/wizard.png" className="icon" />
+			<Image src="/wizard.png" className="icon" alt="logo" width={70} />
 			<h3>How is my next week?</h3>
 			<p className="description">
 				Welcome to the F<span>AI</span>T fortune teller. Enter your date of
@@ -85,7 +88,14 @@ export default function Home() {
 				/>
 				<input type="submit" value="Generate Predictions" />
 			</form>
-			{isLoading && <img src="/wizard-magic.gif" className="loading" />}
+			{isLoading && (
+				<Image
+					src="/wizard-magic.gif"
+					className="loading"
+					alt="loading-wizard"
+					width={70}
+				/>
+			)}
 			<div className="result">{result}</div>
 
 			{user ? (

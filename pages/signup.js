@@ -7,10 +7,12 @@ const Signup = () => {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
 	useUser({ redirectTo: "/", redirectIfFound: true });
 
 	const onSubmit = async (event) => {
+		setIsLoading(true);
 		event.preventDefault();
 		setErrorMessage("");
 
@@ -23,6 +25,7 @@ const Signup = () => {
 
 			const signupData = await signupRes.json();
 			if (signupRes.status !== 200) {
+				setIsLoading(false);
 				throw signupData.error || new Error(signupData.message);
 			}
 
@@ -34,12 +37,15 @@ const Signup = () => {
 
 			const loginData = await loginRes.json();
 			if (loginRes.status === 200) {
+				setIsLoading(false);
 				Router.push("/");
 			} else {
+				setIsLoading(false);
 				throw loginData.error || new Error(loginData.message);
 			}
 		} catch (error) {
 			console.log("An unexpected error has occurred: ", error.message);
+			setIsLoading(false);
 			setErrorMessage(error.message);
 		}
 	};
@@ -67,7 +73,11 @@ const Signup = () => {
 			<p>
 				Already have an account? <Link href="/login">Login</Link>
 			</p>
-			{errorMessage && <p className="error">{errorMessage}</p>}
+			{(errorMessage || isLoading) && (
+				<p className={isLoading ? "loading-message" : "error"}>
+					{isLoading ? "Loading..." : errorMessage}
+				</p>
+			)}
 		</div>
 	);
 };

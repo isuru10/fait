@@ -6,10 +6,12 @@ const Login = () => {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
 	useUser({ redirectTo: "/", redirectIfFound: true });
 
 	const onSubmit = async (event) => {
+		setIsLoading(true);
 		event.preventDefault();
 		setErrorMessage("");
 
@@ -22,13 +24,16 @@ const Login = () => {
 
 			const data = await res.json();
 			if (res.status === 200) {
+				setIsLoading(false);
 				Router.push("/");
 			} else {
+				setIsLoading(false);
 				throw data.error || new Error(data.message);
 			}
 		} catch (error) {
 			console.log("An unexpected error has occurred: ", error.message);
 			setErrorMessage(error.message);
+			setIsLoading(false);
 		}
 	};
 
@@ -52,7 +57,11 @@ const Login = () => {
 				/>
 				<input type="submit" value="Login" />
 			</form>
-			{errorMessage && <p className="error">{errorMessage}</p>}
+			{(errorMessage || isLoading) && (
+				<p className={isLoading ? "loading-message" : "error"}>
+					{isLoading ? "Loading..." : errorMessage}
+				</p>
+			)}
 		</div>
 	);
 };

@@ -156,6 +156,15 @@ input[type="text"] {
 	text-align: center;
 }
 
+.loading-message {
+	color: white;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: green;
+	width: 300px;
+	text-align: center;
+}
+
 .date-container {
 	display: flex;
 	gap: 10px;

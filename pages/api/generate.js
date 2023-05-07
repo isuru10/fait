@@ -30,8 +30,8 @@ export default async function generate(req, res) {
 		const completion = await openai.createCompletion({
 			model: "text-davinci-003",
 			prompt: generatePrompt(dob),
-			max_tokens: 64,
-			temperature: 0,
+			max_tokens: 128,
+			temperature: 1,
 		});
 		res.status(200).json({ result: completion.data.choices[0].text });
 	} catch (error) {
@@ -51,10 +51,6 @@ export default async function generate(req, res) {
 }
 
 function generatePrompt(dob) {
-	return `You are in a game of predicting someones future based on their dob. 
-	you are a professional astrologer with decades of experience. 
-	generate astrological prediction on how the next week will occur for the following dob
-	delimited with '''. use high amount of perplexity and burstiness in your response. 
-	you are directly speaking to the person whose dob is given. strictly summarize the response to only 200 characters.
+	return `You are in a game of predicting someones future based on their dob. you are a professional astrologer with decades of experience. generate astrological prediction on how the next week will occur for the following dob delimited with '''. use high amount of perplexity and burstiness in your response. you are directly speaking to the person whose dob is given. strictly summarize the response to only 200 characters.
 	'''${dob}'''`;
 }
